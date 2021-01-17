@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+
+
+{% block head %}
+<link href="https://getbootstrap.com/docs/4.0/examples/album/album.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block body %}
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+  <div class="container d-flex justify-content-between">
+    <a class="navbar-brand" href="#">pikkit</a>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto">
+	<li class="nav-item active">
+	  <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="https://alberthjlee.github.io/">About</a>
+	</li>
+	<li class="nav-item">
+	  <a class="nav-link" href="slides">Slides</a>
+	</li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="content-output">
+  <div class="jumbotron">
+    <div class="container">
+      <h2>Your top pic</h2>
+      <div>
+	<img src={{imagefile}} alt="Best Picture Ever" height=400px width=400px>
+	<div class="scorebox_top">
+	  Likes (projected):
+	  {{prob0}}
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="album text-muted">
+  <div class="container">
+
+    <h4>Runner ups</h4>
+    <div class="row">
+      <div class="cardc">
+	<img src={{imagefile1}} alt="Upload more photos for better results :)">
+	<div class="scorebox">
+	  <p>
+	  Likes:
+	  {{prob1}}
+	  </p>
+	</div>
+      </div>
+      <div class="cardc">
+	<img src={{imagefile2}} alt="Upload more photos for better results :)">
+	<div class="scorebox">
+	  Likes:
+	  {{prob2}}
+	</div>
+      </div>
+      <div class="cardc">
+	<img src={{imagefile3}} alt="Upload more photos for better results :)">
+	<div class="scorebox">
+	  Likes:
+	  {{prob3}}
+	</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!--</body>-->
+
+{% endblock %}
+ 

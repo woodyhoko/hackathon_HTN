@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+
+{% block body %}
+
+<!--<body>-->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+  <div class="container d-flex justify-content-between">
+    <a class="navbar-brand" href="#">pikkit</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://alberthjlee.github.io/">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="slides">Slides</a>
+        </li>
+      </ul>
+      <!--
+          <form class="form-inline mt-2 mt-md-0">
+	    <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+	    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+          </form>
+          -->
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container banner">
+    <div class="banner_j jumbotron" >
+      <img src="static/pikkit_banner.png" alt="Put your best photo forward :)">
+      <!-- Image credits! (left to right) pierreherme, iceandvice, and stuffbeneats on Instagram -->
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="container inputpage" width=800px>
+    <div class="jumbotron" >
+      <div class="form-signin normal-text">
+	<h2>How it works:</h2>
+	<ul>
+          <li>
+            Upload the images you want to test
+          </li>
+          <li>
+	    pikkit will pick the best one
+          </li>
+	</ul>
+      </div>
+      <form method=post enctype=multipart/form-data class="form-signin">	
+	<h2>Find your best pic!</h2>
+	<p>
+	  <!--<input type=file name=filez multiple="" class="form-control mr-sm-2">
+	      <button type=file name=filez multiple="" class="btn btn-outline-success my-2 my-sm-0">Browse...</button>      -->
+	  <!--<input type=submit value=Upload class="custom-button">-->
+          <input type=file name=filez multiple="" class="custom-button">
+          <div>
+            <button class="btn btn-outline-success my-2 my-sm-0 widebutton" type="submit">Upload</button>
+          </div>
+	</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!--</body>-->
+
+{% endblock %}
+ 
