@@ -1,3 +1,7 @@
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
 {% extends "public/templates/public_template.html" %}
 
 {% block title %} Upload video {% endblock %}
@@ -10,6 +14,9 @@
 
             <h1>Upload video</h1>
             <hr>
+            <!-- {% for result in results%}
+            <td>{{ statte }}</td>
+            {% endfor %} -->
 
             <form action = "/upload-video" method="POST" enctype="multipart/form-data">
             

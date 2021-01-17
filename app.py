@@ -15,6 +15,7 @@ import dash_html_components as html
 from flask import render_template, request, redirect
 import imageio
 import image_demp
+import cv2
 
 
 # Custom function
@@ -28,6 +29,8 @@ def load_pickle(file_name):
 ############################################################################################
 ############################## PARAMETERS and PRE-COMPUTATION ##############################
 ############################################################################################
+
+statte = "HIHIHIHIHIHI"
 
 # Load pre computed data
 world = load_pickle('world_info.p')
@@ -84,12 +87,18 @@ def upload_video():
                 if len(data_ps1[i])!=0 and len(data_ps2[i])!=0:
                     data_score += [np.inner(data_ps1[i], data_ps2[i])/(norm(data_ps1[i])*norm(data_ps2[i]))]
             print("done!")
-            print(data_score)
+            print(np.array(data_ps2).shape)
+            print(np.array(data_score).shape)
             
-
+            video_out = cv2.VideoWriter("testt.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm["source_size"][0],video_rm["source_size"][1]))
+            for image in data_p1:
+                video_out.write(image)
+            
             return redirect(request.url)
 
     return render_template("public/upload_video.html")
+
+# def 
 
 @server.route('/HTN1')
 def hello():

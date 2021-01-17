@@ -59,9 +59,9 @@ def main(dd):
         keypoint_coords *= output_scale
 
         # if args.output_dir:
-        #     draw_image = posenet.draw_skel_and_kp(
-        #         draw_image, pose_scores, keypoint_scores, keypoint_coords,
-        #         min_pose_score=0.25, min_part_score=0.25)
+        draw_image = posenet.draw_skel_and_kp(
+            draw_image, pose_scores, keypoint_scores, keypoint_coords,
+            min_pose_score=0.25, min_part_score=0.25)
 
         result += [draw_image]
             # cv2.imwrite(os.path.join(args.output_dir, os.path.relpath(f, args.image_dir)), draw_image)
@@ -72,7 +72,7 @@ def main(dd):
             if pose_scores[pi] == 0.:
                 break
             for ki, (s, c) in enumerate(zip(keypoint_scores[pi, :], keypoint_coords[pi, :, :])):
-                result_temp += [c]
+                result_temp += list(c)
 
         result_s += [result_temp]
         # if not args.notxt:
