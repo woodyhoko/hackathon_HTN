@@ -4,7 +4,7 @@
 
 {% extends "public/templates/public_template.html" %}
 
-{% block title %} Upload video {% endblock %}
+{% block title %} View result {% endblock %}
 
 {% block main %}
 
@@ -12,7 +12,7 @@
     <div class="row">
         <div class="col">
 
-            <h1>Upload video</h1>
+            <h1>View result</h1>
             <hr>
             
             <video width="320" height="240" controls autoplay>
@@ -25,10 +25,38 @@
                 Your browser does not support the video tag.
             </video>
 
+            <!-- <form action = "/upload-video" method="POST" enctype="multipart/form-data">
             
+                    <label>Select video 1</label>
+                    <div class="custom-file">
+                        <input type = "file" class="custom-file-input" name="video" id="image">
+                        <label class = "custom-file-label" for="image">Select video1...</label>
+                    </div>
+                    <label>Select video 2</label>
+                    <div class="custom-file">
+                        <input type = "file" class="custom-file-input" name="video2" id="image2">
+                        <label class = "custom-file-label" for="image2">Select video2...</label>
+                    </div>
+
+
+                <button type="submit" class="btn btn-primary">Upload</button>
+                
+                
+                <h1>
+                    {% for statee in statte%}
+                            <div hx-get="/" hx-trigger="every 1s">{{ statee }}</td>
+                    {% endfor %}
+                </h1>
+                
+
+            </form> -->
 
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<canvas id="myChart" width="400" height="400"></canvas>
+
 
 {% endblock %}
