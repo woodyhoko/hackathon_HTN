@@ -101,11 +101,11 @@ def upload_video():
             print(np.array(data_ps2).shape)
             print(np.array(data_score).shape)
             
-            video_out = cv2.VideoWriter("out1.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm["source_size"][0],video_rm["source_size"][1]))
+            video_out = cv2.VideoWriter("static/out1.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm["source_size"][0],video_rm["source_size"][1]))
             for image in data_p1:
                 video_out.write(image)
 
-            video_out2 = cv2.VideoWriter("out2.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm2["source_size"][0],video_rm2["source_size"][1]))
+            video_out2 = cv2.VideoWriter("static/out2.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm2["source_size"][0],video_rm2["source_size"][1]))
             for image in data_p2:
                 video_out2.write(image)
             
