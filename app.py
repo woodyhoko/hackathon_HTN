@@ -99,6 +99,8 @@ def upload_video():
             statte[0] = "calculating dance score ... "
             for i, ii in enumerate(temp):
                 if len(data_ps1[i])!=0 and len(data_ps2[i])!=0:
+                    da = data_ps1[i][:34]
+                    db = data_ps2[i][:34]
                     data_score += [np.inner(data_ps1[i], data_ps2[i])/(norm(data_ps1[i])*norm(data_ps2[i]))]
             print("done!")
             statte[0] = "done!"
