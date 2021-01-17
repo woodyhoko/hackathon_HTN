@@ -75,6 +75,10 @@ def main(dd, statte):
             for ki, (s, c) in enumerate(zip(keypoint_scores[pi, :], keypoint_coords[pi, :, :])):
                 result_temp += list(c)
 
+        # print(result_temp)
+        if result_temp == []:
+            result_temp = [0]*68
+
         result_s += [result_temp]
         # if not args.notxt:
         #     print()
