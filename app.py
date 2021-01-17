@@ -18,6 +18,8 @@ import image_demp
 import cv2
 
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
 
 
 # Custom function
@@ -112,9 +114,12 @@ def upload_video():
                 video_out2.write(image)
             
             score = data_score
+            
+            a = list(range(len(data_score)))
 
-            plt.scatter(list(range(len(data_score))), data_score)
-            plt.savefig('score.png')
+            plt.plot(a[:-1],data_score[:-1],a[1:],data_score[1:],linewidth=0.2)
+            plt.ylim((0,1.1))
+            plt.savefig('static/score.png')
             plt.close()
             
             # return redirect(request.url)
