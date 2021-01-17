@@ -17,6 +17,8 @@ import imageio
 import image_demp
 import cv2
 
+import matplotlib.pyplot as plt
+
 
 # Custom function
 import pickle
@@ -110,6 +112,10 @@ def upload_video():
                 video_out2.write(image)
             
             score = data_score
+
+            plt.scatter(list(range(len(data_score))), data_score)
+            plt.savefig('score.png')
+            plt.close()
             
             # return redirect(request.url)
             
