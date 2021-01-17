@@ -5,12 +5,17 @@
 # Classic libraries
 import os
 import numpy as np
+from numpy.linalg import norm
 import pandas as pd
 
 # Dash imports
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from flask import render_template, request, redirect
+import imageio
+import image_demp
+
 
 # Custom function
 import pickle
@@ -44,6 +49,47 @@ app = dash.Dash(
 server = app.server
 app.title = 'COVID 19 - World cases'
 app.config.suppress_callback_exceptions = True
+
+
+@server.route('/upload-video', methods = ["GET", "POST"])
+def upload_video():
+
+    if request.method == "POST":
+        if request.files:
+
+            video = request.files["video"].read()
+            video2 = request.files["video2"].read()
+            print(len(video))
+            video_r = imageio.get_reader(video,  'ffmpeg')
+            video_rm = video_r.get_meta_data()
+            video_r2 = imageio.get_reader(video2,  'ffmpeg')
+            video_rm2 = video_r2.get_meta_data()
+            # print(video_r.get_data(10))
+            print(video_rm)
+            temp = video_r
+            if video_rm["duration"] > video_rm2["duration"]:
+                temp = video_r2
+            data1 = []
+            data2 = []
+            print("reading... ")
+            for i, ii in enumerate(temp):
+                data1 += [ii]
+                data2 += [video_r2.get_data(i)]
+            print("analysing... ")
+            data_p1, data_ps1 = image_demp.main(data1)
+            data_p2, data_ps2 = image_demp.main(data2)
+            data_score = []
+            print("calculating... ")
+            for i, ii in enumerate(temp):
+                if len(data_ps1[i])!=0 and len(data_ps2[i])!=0:
+                    data_score += [np.inner(data_ps1[i], data_ps2[i])/(norm(data_ps1[i])*norm(data_ps2[i]))]
+            print("done!")
+            print(data_score)
+            
+
+            return redirect(request.url)
+
+    return render_template("public/upload_video.html")
 
 @server.route('/HTN1')
 def hello():
