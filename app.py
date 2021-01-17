@@ -30,7 +30,7 @@ def load_pickle(file_name):
 ############################## PARAMETERS and PRE-COMPUTATION ##############################
 ############################################################################################
 
-statte = "HIHIHIHIHIHI"
+statte = [""]
 
 # Load pre computed data
 world = load_pickle('world_info.p')
@@ -50,9 +50,15 @@ app = dash.Dash(
 
 # Associating server
 server = app.server
+server.config["TEMPLATES_AUTO_RELOAD"] = True
 app.title = 'COVID 19 - World cases'
 app.config.suppress_callback_exceptions = True
 
+score = []
+
+@server.route('/view-video', methods = ["GET"])
+def view_video():
+    return render_template("public/view_video.html", values=score)
 
 @server.route('/upload-video', methods = ["GET", "POST"])
 def upload_video():
@@ -75,28 +81,41 @@ def upload_video():
             data1 = []
             data2 = []
             print("reading... ")
+            statte[0] = "reading video ... "
             for i, ii in enumerate(temp):
                 data1 += [ii]
                 data2 += [video_r2.get_data(i)]
             print("analysing... ")
-            data_p1, data_ps1 = image_demp.main(data1)
-            data_p2, data_ps2 = image_demp.main(data2)
+            statte[0] = "analysing video 1 ... "
+            data_p1, data_ps1 = image_demp.main(data1, statte)
+            statte[0] = "analysing video 2 ... "
+            data_p2, data_ps2 = image_demp.main(data2, statte)
             data_score = []
-            print("calculating... ")
+            print("calculating dance score ... ")
+            statte[0] = "calculating dance score ... "
             for i, ii in enumerate(temp):
                 if len(data_ps1[i])!=0 and len(data_ps2[i])!=0:
                     data_score += [np.inner(data_ps1[i], data_ps2[i])/(norm(data_ps1[i])*norm(data_ps2[i]))]
             print("done!")
+            statte[0] = "done!"
             print(np.array(data_ps2).shape)
             print(np.array(data_score).shape)
             
-            video_out = cv2.VideoWriter("testt.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm["source_size"][0],video_rm["source_size"][1]))
+            video_out = cv2.VideoWriter("out1.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm["source_size"][0],video_rm["source_size"][1]))
             for image in data_p1:
                 video_out.write(image)
-            
-            return redirect(request.url)
 
-    return render_template("public/upload_video.html")
+            video_out2 = cv2.VideoWriter("out2.mp4", cv2.VideoWriter_fourcc(*"mp4v"), 24, (video_rm2["source_size"][0],video_rm2["source_size"][1]))
+            for image in data_p2:
+                video_out2.write(image)
+            
+            score = data_score
+            
+            # return redirect(request.url)
+            
+            return redirect("/view-video")
+
+    return render_template("public/upload_video.html", statte = statte)
 
 # def 
 

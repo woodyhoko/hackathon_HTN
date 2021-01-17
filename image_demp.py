@@ -16,7 +16,7 @@ parser.add_argument('--output_dir', type=str, default='./output')
 args = parser.parse_args()
 
 
-def main(dd):
+def main(dd, statte):
     model = posenet.load_model(args.model)
     # model = model.cuda()
     output_stride = model.output_stride
@@ -35,6 +35,7 @@ def main(dd):
     # for f in filenames:
     for iid,d in enumerate(dd):
         print(iid,end=' ... ')
+        statte[0] = str(iid)+" / "+str(len(dd))
         input_image, draw_image, output_scale = posenet.utils._process_input(d)
         # input_image, draw_image, output_scale = posenet.read_imgfile(
             # f, scale_factor=args.scale_factor, output_stride=output_stride)
