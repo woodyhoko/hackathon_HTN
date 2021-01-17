@@ -62,7 +62,10 @@ score = []
 
 @server.route('/view-video', methods = ["GET"])
 def view_video():
-    return render_template("public/view_video.html", values=score)
+    temp_score = [x for x in score if x!=0]
+    if temp_score==[]:
+        temp_score = [0]
+    return render_template("public/view_video.html", value=sum(temp_score)/len(temp_score))
 
 @server.route('/upload-video', methods = ["GET", "POST"])
 def upload_video():
@@ -243,4 +246,4 @@ if __name__ == "__main__":
     print('*' * 80)
 
     # Starting flask server
-    app.run_server(debug=True, port=PORT)
+    app.run_server(debug=True, port=PORT, host="0.0.0.0")
