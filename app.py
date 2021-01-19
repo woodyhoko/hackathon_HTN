@@ -62,7 +62,7 @@ score = []
 
 @server.route('/view-video', methods = ["GET"])
 def view_video():
-    temp_score = [x for x in score if x!=0]
+    temp_score = [x*100 for x in score if x==x]
     if temp_score==[]:
         temp_score = [0]
     return render_template("public/view_video.html", value=sum(temp_score)/len(temp_score))
