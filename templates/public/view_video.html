@@ -1,0 +1,73 @@
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <style>
+        h1 {
+          text-align: center;
+          color: #75241e;
+        }
+        h2 {
+          text-align: center;
+          color: #ab713f;
+        }
+    </style>
+</head>
+
+{% extends "public/templates/public_template.html" %}
+
+{% block title %} View result {% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <h1>M(L)OVE</h1>
+    <div class="row">
+        <div class="col">
+
+            <h2> (*´ω`)人(´ω`*) View result (*´ω`)人(´ω`*) </h2>
+            <hr>
+            
+            <video width=480 height= controls autoplay>
+                <source src={{ url_for('static', filename="out1.mp4") }} type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <video width=480 height= controls autoplay>
+                <source src={{ url_for('static', filename="out2.mp4") }} type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+
+            <!-- <form action = "/upload-video" method="POST" enctype="multipart/form-data">
+            
+                    <label>Select video 1</label>
+                    <div class="custom-file">
+                        <input type = "file" class="custom-file-input" name="video" id="image">
+                        <label class = "custom-file-label" for="image">Select video1...</label>
+                    </div>
+                    <label>Select video 2</label>
+                    <div class="custom-file">
+                        <input type = "file" class="custom-file-input" name="video2" id="image2">
+                        <label class = "custom-file-label" for="image2">Select video2...</label>
+                    </div>
+
+
+                <button type="submit" class="btn btn-primary">Upload</button>
+                
+                
+                <h1>
+                    {% for statee in statte%}
+                            <div hx-get="/" hx-trigger="every 1s">{{ statee }}</td>
+                    {% endfor %}
+                </h1>
+                
+
+            </form> -->
+
+        </div>
+    </div>
+    <div id="outPopUp"><h3>
+        <img src="static/score.png" alt="score">Score: {{value}} % </h3>
+    </div>
+</div>
+
+
+{% endblock %}
