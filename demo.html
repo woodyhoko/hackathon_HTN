@@ -140,7 +140,8 @@ function cosineSim(a,b){
 }
 
 function jointSim(ref,stu) {
-  return ref.map(([rx,ry],[sx,sy])=>{
+  return ref.map(([rx,ry],i)=>{
+    const [sx,sy]=stu[i];
     const d=Math.hypot(rx-sx,ry-sy);
     return Math.max(0,1-d*2);
   });
