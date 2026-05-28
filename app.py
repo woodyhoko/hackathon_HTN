@@ -55,7 +55,7 @@ app = dash.Dash(
 # Associating server
 server = app.server
 server.config["TEMPLATES_AUTO_RELOAD"] = True
-app.title = 'COVID 19 - World cases'
+app.title = 'M(L)ove — AI Dance Coach'
 app.config.suppress_callback_exceptions = True
 
 score = []
