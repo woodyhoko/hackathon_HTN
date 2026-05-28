@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M(L)ove — AI Dance Coach Demo</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0f0f14;color:#e6e6f0;font-family:"Segoe UI",system-ui,sans-serif;padding:24px;min-height:100vh}
+  h1{font-size:22px;margin-bottom:4px;background:linear-gradient(90deg,#ff6bcb,#ffb347);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:#8888a0;font-size:13px;margin-bottom:24px}
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:650px){.layout{grid-template-columns:1fr}}
+  .card{background:#16161f;border:1px solid #2a2a3a;border-radius:14px;padding:16px}
+  h2{font-size:13px;color:#8888a0;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  canvas{width:100%;display:block}
+  #score-bar-wrap{height:28px;background:#0f0f14;border-radius:8px;overflow:hidden;margin-top:10px}
+  #score-bar{height:100%;background:linear-gradient(90deg,#ff6bcb,#ffb347);border-radius:8px;transition:width .3s;width:0%}
+  #score-label{text-align:center;font-size:22px;font-weight:700;margin-top:8px;color:#fff}
+  .grade{font-size:13px;color:#8888a0;text-align:center;margin-top:2px}
+  #timeline-wrap{margin-top:8px}
+  .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+  button{padding:9px 18px;border:none;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
+  .btn-primary{background:linear-gradient(90deg,#ff6bcb,#ffb347);color:#0f0f14}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-sec{background:#2a2a3a;color:#e6e6f0}
+  .btn-sec:hover{background:#353550}
+  label{font-size:12px;color:#8888a0}
+  input[type=range]{width:130px;accent-color:#ff6bcb}
+  .joint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;font-size:12px}
+  .jb{background:#0f0f14;border-radius:6px;padding:5px 8px;border:1px solid #2a2a3a}
+  .jb .name{color:#8888a0}
+  .jb .val{color:#ff6bcb;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<h1>M(L)ove — AI Dance Coach</h1>
+<p class="sub">Hack the North — Pose-similarity scoring demo. Simulates cosine-similarity comparison of skeleton keypoints between a reference choreography and a student's attempt.</p>
+
+<div class="ctrl">
+  <button class="btn-primary" id="play">▶ Start Demo</button>
+  <button class="btn-sec" id="reset">Reset</button>
+  <div><label>Difficulty (noise) — <span id="noiseV">0.20</span></label><br>
+  <input id="noise" type="range" min="0" max="80" value="20"></div>
+</div>
+
+<div class="layout">
+  <div class="card">
+    <h2>Reference Skeleton (Choreography)</h2>
+    <canvas id="ref" height="260"></canvas>
+  </div>
+  <div class="card">
+    <h2>Student Skeleton</h2>
+    <canvas id="stu" height="260"></canvas>
+  </div>
+</div>
+
+<div style="margin-top:16px" class="card">
+  <h2>Similarity Score</h2>
+  <div id="score-bar-wrap"><div id="score-bar"></div></div>
+  <div id="score-label">—</div>
+  <div class="grade" id="grade">run the demo to see your score</div>
+</div>
+
+<div style="margin-top:16px" class="card">
+  <h2>Score Timeline (cosine similarity per frame)</h2>
+  <canvas id="timeline" height="120"></canvas>
+  <div id="timeline-wrap"></div>
+</div>
+
+<div style="margin-top:16px" class="card">
+  <h2>Joint-level Similarity</h2>
+  <div class="joint-grid" id="joints"></div>
+</div>
+
+<script>
+// 17 COCO keypoints
+const JOINT_NAMES = ['nose','l-eye','r-eye','l-ear','r-ear','l-shldr','r-shldr','l-elbow','r-elbow','l-wrist','r-wrist','l-hip','r-hip','l-knee','r-knee','l-ankle','r-ankle'];
+const SKELETON = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
+const JOINT_COLORS = ['#ff6bcb','#ff6bcb','#ff6bcb','#ffb347','#ffb347','#58a6ff','#f85149','#58a6ff','#f85149','#58a6ff','#f85149','#3fb950','#d29922','#3fb950','#d29922','#3fb950','#d29922'];
+
+// Canonical pose (normalized [-1,1] range, centered)
+const BASE_POSE = [
+  [0,.95],[-0.07,.92],[.07,.92],[-0.14,.88],[.14,.88], // head
+  [-0.22,.72],[.22,.72],                                // shoulders
+  [-0.32,.5],[.32,.5],                                  // elbows
+  [-0.38,.28],[.38,.28],                                // wrists
+  [-0.14,.22],[.14,.22],                                // hips
+  [-0.16,-.1],[.16,-.1],                                // knees
+  [-0.17,-.48],[.17,-.48]                               // ankles
+];
+
+let frame=0,running=false,raf=null,history=[],NOISE=0.2;
+
+function animatedPose(t) {
+  const p=BASE_POSE.map(([x,y])=>[x,y]);
+  // sway + arm wave
+  const sw=Math.sin(t*0.04)*0.06;
+  const wave=Math.sin(t*0.06);
+  // arms
+  p[7][0]+=-0.12+wave*0.14; p[7][1]+=wave*0.12;
+  p[9][0]+=-0.15+wave*0.22; p[9][1]+=wave*0.2;
+  p[8][0]+=0.12-wave*0.14;  p[8][1]+=-wave*0.12;
+  p[10][0]+=0.15-wave*0.22; p[10][1]+=-wave*0.2;
+  // body sway
+  for(let i=0;i<p.length;i++)p[i][0]+=sw;
+  // knee bend
+  const kb=Math.max(0,Math.sin(t*0.05))*0.1;
+  p[13][1]+=kb; p[15][1]+=kb*1.5;
+  p[14][1]+=kb*0.5; p[16][1]+=kb*0.8;
+  return p;
+}
+
+function noisePose(pose, level) {
+  return pose.map(([x,y])=>[x+(Math.random()-0.5)*level*2, y+(Math.random()-0.5)*level*2]);
+}
+
+function drawSkeleton(canvasId, pose, color='#58a6ff') {
+  const cv=document.getElementById(canvasId);
+  const ctx=cv.getContext('2d');
+  const W=cv.clientWidth*devicePixelRatio,H=cv.clientHeight*devicePixelRatio;
+  cv.width=W; cv.height=H;
+  ctx.fillStyle='#0f0f14'; ctx.fillRect(0,0,W,H);
+  const px=([x,y])=>[((x+1)/2)*W*0.7+W*0.15, ((1-y)/2)*H*0.9+H*0.05];
+  // bones
+  ctx.lineWidth=2.5*devicePixelRatio;
+  SKELETON.forEach(([a,b])=>{
+    const [x1,y1]=px(pose[a]),[x2,y2]=px(pose[b]);
+    ctx.strokeStyle=color+'88'; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  });
+  // joints
+  pose.forEach((p,i)=>{const [x,y]=px(p);ctx.fillStyle=JOINT_COLORS[i];ctx.beginPath();ctx.arc(x,y,4*devicePixelRatio,0,6.28);ctx.fill();});
+}
+
+function cosineSim(a,b){
+  const flat_a=a.flat(), flat_b=b.flat();
+  let dot=0,na=0,nb=0;
+  for(let i=0;i<flat_a.length;i++){dot+=flat_a[i]*flat_b[i];na+=flat_a[i]**2;nb+=flat_b[i]**2;}
+  return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);
+}
+
+function jointSim(ref,stu) {
+  return ref.map(([rx,ry],[sx,sy])=>{
+    const d=Math.hypot(rx-sx,ry-sy);
+    return Math.max(0,1-d*2);
+  });
+}
+
+function drawTimeline() {
+  const cv=document.getElementById('timeline');
+  const ctx=cv.getContext('2d');
+  const W=cv.clientWidth*devicePixelRatio,H=cv.clientHeight*devicePixelRatio;
+  cv.width=W; cv.height=H;
+  ctx.fillStyle='#0f0f14'; ctx.fillRect(0,0,W,H);
+  if(history.length<2)return;
+  ctx.strokeStyle='#ff6bcb'; ctx.lineWidth=2*devicePixelRatio;
+  ctx.beginPath();
+  history.forEach((v,i)=>{const x=i/(history.length-1)*W,y=H-(v*H*0.85+H*0.05);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke();
+  // fill
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fillStyle='rgba(255,107,203,.08)'; ctx.fill();
+  // 0.8 guideline
+  const gy=H-(0.8*H*0.85+H*0.05);
+  ctx.strokeStyle='#3fb95040'; ctx.setLineDash([4,4]); ctx.lineWidth=devicePixelRatio;
+  ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); ctx.setLineDash([]);
+}
+
+function gradeStr(s) {
+  if(s>=.95)return'S — Perfect! 🌟';if(s>=.85)return'A — Excellent!';if(s>=.75)return'B — Good';if(s>=.60)return'C — Needs work';return'D — Keep practicing';
+}
+
+function renderJoints(sims){
+  const el=document.getElementById('joints');
+  el.innerHTML='';
+  sims.forEach((v,i)=>{
+    const d=document.createElement('div');d.className='jb';
+    d.innerHTML=`<div class="name">${JOINT_NAMES[i]}</div><div class="val">${(v*100).toFixed(0)}%</div>`;
+    el.appendChild(d);
+  });
+}
+
+function step() {
+  const ref=animatedPose(frame);
+  const stu=noisePose(ref,NOISE);
+  drawSkeleton('ref',ref,'#58a6ff');
+  drawSkeleton('stu',stu,'#ff6bcb');
+  const sim=Math.max(0,(cosineSim(ref,stu)-.5)*2);
+  history.push(sim); if(history.length>200)history.shift();
+  const avg=history.reduce((a,b)=>a+b,0)/history.length;
+  document.getElementById('score-bar').style.width=(avg*100)+'%';
+  document.getElementById('score-label').textContent=(avg*100).toFixed(1)+'%';
+  document.getElementById('grade').textContent=gradeStr(avg);
+  drawTimeline();
+  renderJoints(jointSim(ref,stu));
+  frame++;
+  if(running)raf=requestAnimationFrame(step);
+}
+
+document.getElementById('play').onclick=()=>{
+  if(running){running=false;cancelAnimationFrame(raf);document.getElementById('play').textContent='▶ Resume';}
+  else{running=true;document.getElementById('play').textContent='⏸ Pause';step();}
+};
+document.getElementById('reset').onclick=()=>{running=false;cancelAnimationFrame(raf);frame=0;history=[];document.getElementById('play').textContent='▶ Start Demo';document.getElementById('score-label').textContent='—';document.getElementById('score-bar').style.width='0%';document.getElementById('joints').innerHTML='';drawTimeline();};
+document.getElementById('noise').oninput=e=>{NOISE=e.target.value/100;document.getElementById('noiseV').textContent=NOISE.toFixed(2)};
+
+// init canvases
+drawSkeleton('ref',BASE_POSE,'#58a6ff');
+drawSkeleton('stu',BASE_POSE,'#ff6bcb');
+</script>
+</body>
+</html>
