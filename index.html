@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M(L)ove — AI Dance Coach</title>
+<meta name="description" content="A computer-vision choreography feedback system: pose estimation + cosine-similarity scoring, built in 36 hours at Hack the North.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0c0618;--ink:#fbeeff;--muted:#b196c9;--pk:#ff2e8b;--pu:#9d4edd;--cy:#36e0ff;--line:rgba(255,255,255,.09)}
+  *{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:Sora,system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .bg{position:fixed;inset:0;z-index:0;background:radial-gradient(800px 600px at 25% 5%,rgba(255,46,139,.28),transparent 55%),radial-gradient(700px 600px at 85% 25%,rgba(54,224,255,.2),transparent 55%),var(--bg)}
+  canvas#sk{position:fixed;inset:0;z-index:1;opacity:.6}
+  .wrap{position:relative;z-index:3;max-width:1020px;margin:0 auto;padding:0 24px}
+  header{min-height:92vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0 36px}
+  .tag{font-family:"Space Mono";font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--cy);margin-bottom:20px}
+  h1{font-weight:800;font-size:clamp(40px,8vw,92px);line-height:.98;letter-spacing:-2px}
+  h1 .gr{background:linear-gradient(110deg,var(--pk),var(--pu),var(--cy));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(16px,2vw,21px);color:var(--muted);max-width:660px;margin:24px 0}
+  .by{font-size:14px;color:var(--muted)}.by b{color:var(--ink)}
+  .cta{display:flex;flex-wrap:wrap;gap:13px;margin-top:28px}
+  .btn{display:inline-flex;align-items:center;gap:9px;padding:14px 26px;border-radius:100px;font-weight:700;font-size:15px;transition:.2s;border:1px solid var(--line)}
+  .btn.p{background:linear-gradient(110deg,var(--pk),var(--pu));color:#fff;border:none;box-shadow:0 12px 34px rgba(255,46,139,.4)}.btn.p:hover{transform:translateY(-3px) scale(1.02)}
+  .btn.g{background:rgba(255,255,255,.04)}.btn.g:hover{border-color:var(--cy);color:var(--cy);transform:translateY(-3px)}
+  section{padding:48px 0}
+  .lbl{font-family:"Space Mono";font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--pk);margin-bottom:8px}
+  .ttl{font-weight:800;font-size:clamp(23px,3.4vw,36px);margin-bottom:28px;letter-spacing:-.5px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .c{background:rgba(26,14,42,.55);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:26px;transition:.2s}
+  .c:hover{transform:translateY(-5px);border-color:rgba(255,46,139,.45)}
+  .c .ic{font-size:24px;margin-bottom:12px}.c h3{font-size:16px;margin-bottom:8px}.c p{font-size:14px;color:var(--muted)}
+  .eq{font-family:"Space Mono";background:#0a0414;border:1px solid var(--line);border-left:3px solid var(--cy);border-radius:12px;padding:18px 20px;margin-top:8px;font-size:14px;color:#cfe9ff;overflow-x:auto}
+  footer{border-top:1px solid var(--line);margin-top:50px;padding:38px 0 56px;text-align:center;color:var(--muted);font-size:14px}
+  footer a{color:var(--pk)}.fl{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+</style></head>
+<body>
+<div class="bg"></div><canvas id="sk"></canvas>
+<div class="wrap">
+  <header>
+    <div class="tag">Hack the North · 36 hours · computer vision</div>
+    <h1>Dance, <span class="gr">graded<br>frame by frame.</span></h1>
+    <p class="lede">Video can teach you choreography — but it can't tell you your arm angle is off by 20°. M(L)ove compares your attempt against a reference: pose estimation extracts 17 keypoints per frame, cosine similarity scores every frame, and a per-joint breakdown shows exactly where you diverge.</p>
+    <p class="by">By <b>Ho Ko</b> · <b>Rabab Azeem</b> · <b>Nishtha Sharma</b></p>
+    <div class="cta">
+      <a class="btn p" href="demo.html">▶ Live Demo</a>
+      <a class="btn g" href="https://github.com/woodyhoko/hackathon_HTN/blob/main/Move.pdf">📄 Project Slides</a>
+      <a class="btn g" href="https://github.com/woodyhoko/hackathon_HTN#readme">📖 Documentation</a>
+    </div>
+  </header>
+
+  <section>
+    <div class="lbl">how it scores</div>
+    <div class="ttl">Pose in, similarity out.</div>
+    <div class="grid">
+      <div class="c"><div class="ic">🦴</div><h3>17 keypoints / frame</h3><p>Each frame runs through a pose model (COCO schema), mean-centered and L2-normalized so scoring is invariant to position and body scale.</p></div>
+      <div class="c"><div class="ic">📐</div><h3>Cosine similarity</h3><p>Per aligned frame-pair, the cosine of the two normalized pose vectors yields a 0–1 match; the average is your grade.</p></div>
+      <div class="c"><div class="ic">🎯</div><h3>Per-joint breakdown</h3><p>Per-joint Euclidean distance flags which body part diverges most — left wrist? footwork? — making the feedback actionable.</p></div>
+    </div>
+    <div class="eq">score(t) = cos(â, b̂) = (â · b̂) / (‖â‖·‖b̂‖) &nbsp; ∈ [−1, 1] &nbsp;&nbsp; <span style="color:var(--muted)"># 1.0 = perfect posture match</span></div>
+  </section>
+
+  <footer>
+    <div class="fl"><a href="demo.html">Demo</a><a href="https://github.com/woodyhoko/hackathon_HTN">GitHub</a><a href="https://github.com/woodyhoko/hackathon_HTN#readme">README</a><a href="https://github.com/woodyhoko/hackathon_HTN/blob/main/Move.pdf">Slides</a></div>
+    Built by <a href="https://github.com/woodyhoko">woodyhoko</a> · M(L)ove — AI Dance Coach
+  </footer>
+</div>
+<script>
+  // dancing skeleton stick figure
+  const cv=document.getElementById('sk'),x=cv.getContext('2d');let W,H,t=0;
+  function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;}rs();addEventListener('resize',rs);
+  function joint(cx,cy){x.beginPath();x.arc(cx,cy,4,0,6.28);x.fillStyle="#36e0ff";x.fill();}
+  function fig(ox,oy,ph,sc){t;const sh=Math.sin(ph),co=Math.cos(ph);
+    const head=[ox,oy-60*sc],neck=[ox,oy-40*sc],hip=[ox,oy+10*sc];
+    const lh=[ox-22*sc*co,oy-30*sc+10*sh*sc],rh=[ox+22*sc*co,oy-30*sc-10*sh*sc];
+    const lf=[ox-26*sc,oy+50*sc+12*sh*sc],rf=[ox+26*sc,oy+50*sc-12*sh*sc];
+    x.strokeStyle="rgba(255,46,139,.55)";x.lineWidth=3;x.lineJoin="round";
+    x.beginPath();x.moveTo(...neck);x.lineTo(...hip);x.lineTo(...lf);x.moveTo(...hip);x.lineTo(...rf);
+    x.moveTo(...neck);x.lineTo(...lh);x.moveTo(...neck);x.lineTo(...rh);x.stroke();
+    x.beginPath();x.arc(head[0],head[1],14*sc,0,6.28);x.stroke();
+    [neck,hip,lh,rh,lf,rf].forEach(p=>joint(...p));}
+  function tick(){x.clearRect(0,0,W,H);t+=0.05;
+    fig(W*0.18,H*0.62,t,1.4);fig(W*0.84,H*0.5,t+1.2,1.1);fig(W*0.6,H*0.78,t+2.4,0.9);
+    requestAnimationFrame(tick);}
+  tick();
+</script>
+</body></html>
