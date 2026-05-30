@@ -3,210 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M(L)ove — AI Dance Coach Demo</title>
+<title>M(L)ove — MediaPipe Dance Pose Comparison</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+  :root{--bg:#0f0f17;--pan:#181722;--pan2:#13121c;--line:#2c2a3c;--ink:#eceaf6;--muted:#9089a8;--pk:#ff6bcb;--or:#ffb347;--gr:#48e6a0}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0f0f14;color:#e6e6f0;font-family:"Segoe UI",system-ui,sans-serif;padding:24px;min-height:100vh}
-  h1{font-size:22px;margin-bottom:4px;background:linear-gradient(90deg,#ff6bcb,#ffb347);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .sub{color:#8888a0;font-size:13px;margin-bottom:24px}
-  .layout{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:650px){.layout{grid-template-columns:1fr}}
-  .card{background:#16161f;border:1px solid #2a2a3a;border-radius:14px;padding:16px}
-  h2{font-size:13px;color:#8888a0;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-  canvas{width:100%;display:block}
-  #score-bar-wrap{height:28px;background:#0f0f14;border-radius:8px;overflow:hidden;margin-top:10px}
-  #score-bar{height:100%;background:linear-gradient(90deg,#ff6bcb,#ffb347);border-radius:8px;transition:width .3s;width:0%}
-  #score-label{text-align:center;font-size:22px;font-weight:700;margin-top:8px;color:#fff}
-  .grade{font-size:13px;color:#8888a0;text-align:center;margin-top:2px}
-  #timeline-wrap{margin-top:8px}
-  .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
-  button{padding:9px 18px;border:none;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;transition:.15s}
-  .btn-primary{background:linear-gradient(90deg,#ff6bcb,#ffb347);color:#0f0f14}
-  .btn-primary:hover{filter:brightness(1.08)}
-  .btn-sec{background:#2a2a3a;color:#e6e6f0}
-  .btn-sec:hover{background:#353550}
-  label{font-size:12px;color:#8888a0}
-  input[type=range]{width:130px;accent-color:#ff6bcb}
-  .joint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px;font-size:12px}
-  .jb{background:#0f0f14;border-radius:6px;padding:5px 8px;border:1px solid #2a2a3a}
-  .jb .name{color:#8888a0}
-  .jb .val{color:#ff6bcb;font-variant-numeric:tabular-nums}
+  body{background:radial-gradient(1000px 520px at 80% -10%,#241733 0,var(--bg) 55%) fixed,var(--bg);
+       color:var(--ink);font-family:Inter,system-ui,sans-serif;padding:22px 16px 40px;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto}
+  h1{font-family:"Space Grotesk";font-size:23px;font-weight:700;background:linear-gradient(90deg,var(--pk),var(--or));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{color:var(--muted);font-size:13px;line-height:1.6;max-width:820px;margin:6px 0 12px}
+  .sub b{color:var(--ink)}
+  .note{background:#1d1606;border:1px solid #ffb34755;border-left:4px solid var(--or);border-radius:10px;padding:10px 13px;margin-bottom:16px;font-size:12.5px;line-height:1.55;color:#f0e2c0;max-width:840px}
+  .note b{color:var(--or)}
+  .ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+  button{padding:10px 18px;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;transition:.15s}
+  .bp{background:linear-gradient(90deg,var(--pk),var(--or));color:#1a0a16}.bp:hover{filter:brightness(1.08)}.bp:disabled{opacity:.5;cursor:default}
+  .bs{background:#262436;color:var(--ink);border:1px solid var(--line)}.bs:hover{background:#302d44}
+  #status{font-size:12px;color:var(--muted)}
+  .layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media(max-width:640px){.layout{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--pan),var(--pan2));border:1px solid var(--line);border-radius:14px;padding:12px}
+  h2{font-size:11.5px;color:var(--muted);margin-bottom:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .vwrap{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/10}
+  .vwrap video{width:100%;height:100%;object-fit:cover;display:block}
+  .vwrap canvas{position:absolute;inset:0;width:100%;height:100%}
+  .scorecard{background:linear-gradient(180deg,var(--pan),var(--pan2));border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center}
+  #scoreNum{font-family:"Space Grotesk";font-size:46px;font-weight:700;line-height:1;
+            background:linear-gradient(90deg,var(--pk),var(--or));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .grade{font-size:13px;color:var(--muted);margin-top:4px}
+  #barWrap{height:12px;background:#0f0f17;border-radius:7px;overflow:hidden;margin:12px 0 0}
+  #bar{height:100%;width:0%;background:linear-gradient(90deg,var(--pk),var(--or));transition:width .2s}
+  canvas#timeline{width:100%;display:block;border-radius:8px;background:#0c0b14}
 </style>
 </head>
 <body>
-<h1>M(L)ove — AI Dance Coach</h1>
-<p class="sub">Hack the North — Pose-similarity scoring demo. Simulates cosine-similarity comparison of skeleton keypoints between a reference choreography and a student's attempt.</p>
+<div class="wrap">
+  <h1>M(L)ove — dance pose comparison</h1>
+  <p class="sub">Two clips of the same routine play side by side. <b>MediaPipe Pose</b> (the real Tasks-Vision <i>PoseLandmarker</i>) tracks 33 body keypoints on each, frame by frame, and a <b>limb-direction cosine similarity</b> scores how closely the two dancers' bodies match in real time.</p>
+  <div class="note">⚠️ <b>Simplified demo.</b> Pose detection is genuinely MediaPipe running in your browser; the similarity score is a lightweight limb-angle comparison, not a full choreography-grading model. It downloads the pose model (~5&nbsp;MB) on first run.</div>
 
-<div class="ctrl">
-  <button class="btn-primary" id="play">▶ Start Demo</button>
-  <button class="btn-sec" id="reset">Reset</button>
-  <div><label>Difficulty (noise) — <span id="noiseV">0.20</span></label><br>
-  <input id="noise" type="range" min="0" max="80" value="20"></div>
-</div>
-
-<div class="layout">
-  <div class="card">
-    <h2>Reference Skeleton (Choreography)</h2>
-    <canvas id="ref" height="260"></canvas>
+  <div class="ctrl">
+    <button class="bp" id="startBtn" disabled>Loading MediaPipe…</button>
+    <button class="bs" id="restartBtn">↺ Restart clips</button>
+    <span id="status">initialising pose model…</span>
   </div>
+
+  <div class="scorecard">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Live pose match</div>
+    <div id="scoreNum">—</div>
+    <div class="grade" id="grade">press play to compare</div>
+    <div id="barWrap"><div id="bar"></div></div>
+  </div>
+
+  <div class="layout">
+    <div class="card">
+      <h2>Reference dancer</h2>
+      <div class="vwrap"><video id="vidA" src="out1.mp4" muted loop playsinline preload="auto"></video><canvas id="ovA"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Comparison dancer</h2>
+      <div class="vwrap"><video id="vidB" src="out2.mp4" muted loop playsinline preload="auto"></video><canvas id="ovB"></canvas></div>
+    </div>
+  </div>
+
   <div class="card">
-    <h2>Student Skeleton</h2>
-    <canvas id="stu" height="260"></canvas>
+    <h2>Similarity over time</h2>
+    <canvas id="timeline" height="120"></canvas>
   </div>
 </div>
 
-<div style="margin-top:16px" class="card">
-  <h2>Similarity Score</h2>
-  <div id="score-bar-wrap"><div id="score-bar"></div></div>
-  <div id="score-label">—</div>
-  <div class="grade" id="grade">run the demo to see your score</div>
-</div>
+<script type="module">
+import {PoseLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.12";
 
-<div style="margin-top:16px" class="card">
-  <h2>Score Timeline (cosine similarity per frame)</h2>
-  <canvas id="timeline" height="120"></canvas>
-  <div id="timeline-wrap"></div>
-</div>
+const statusEl=document.getElementById('status');
+const startBtn=document.getElementById('startBtn');
+const vidA=document.getElementById('vidA'), vidB=document.getElementById('vidB');
+const ovA=document.getElementById('ovA'), ovB=document.getElementById('ovB');
+const cA=ovA.getContext('2d'), cB=ovB.getContext('2d');
+const tl=document.getElementById('timeline'), tctx=tl.getContext('2d');
 
-<div style="margin-top:16px" class="card">
-  <h2>Joint-level Similarity</h2>
-  <div class="joint-grid" id="joints"></div>
-</div>
+const LIMBS=[[11,13],[13,15],[12,14],[14,16],[11,12],[23,24],[11,23],[12,24],[23,25],[25,27],[24,26],[26,28]];
+let lmA=null, lmB=null, landA=null, landB=null, running=false, ema=0, hist=[];
 
-<script>
-// 17 COCO keypoints
-const JOINT_NAMES = ['nose','l-eye','r-eye','l-ear','r-ear','l-shldr','r-shldr','l-elbow','r-elbow','l-wrist','r-wrist','l-hip','r-hip','l-knee','r-knee','l-ankle','r-ankle'];
-const SKELETON = [[0,1],[0,2],[1,3],[2,4],[5,6],[5,7],[7,9],[6,8],[8,10],[5,11],[6,12],[11,12],[11,13],[13,15],[12,14],[14,16]];
-const JOINT_COLORS = ['#ff6bcb','#ff6bcb','#ff6bcb','#ffb347','#ffb347','#58a6ff','#f85149','#58a6ff','#f85149','#58a6ff','#f85149','#3fb950','#d29922','#3fb950','#d29922','#3fb950','#d29922'];
+function limbVecs(lm){return LIMBS.map(([a,b])=>{const dx=lm[b].x-lm[a].x,dy=lm[b].y-lm[a].y;const n=Math.hypot(dx,dy)||1;return [dx/n,dy/n];});}
+function poseSim(a,b){const va=limbVecs(a),vb=limbVecs(b);let s=0;for(let i=0;i<va.length;i++)s+=va[i][0]*vb[i][0]+va[i][1]*vb[i][1];return s/va.length;}
 
-// Canonical pose (normalized [-1,1] range, centered)
-const BASE_POSE = [
-  [0,.95],[-0.07,.92],[.07,.92],[-0.14,.88],[.14,.88], // head
-  [-0.22,.72],[.22,.72],                                // shoulders
-  [-0.32,.5],[.32,.5],                                  // elbows
-  [-0.38,.28],[.38,.28],                                // wrists
-  [-0.14,.22],[.14,.22],                                // hips
-  [-0.16,-.1],[.16,-.1],                                // knees
-  [-0.17,-.48],[.17,-.48]                               // ankles
-];
-
-let frame=0,running=false,raf=null,history=[],NOISE=0.2;
-
-function animatedPose(t) {
-  const p=BASE_POSE.map(([x,y])=>[x,y]);
-  // sway + arm wave
-  const sw=Math.sin(t*0.04)*0.06;
-  const wave=Math.sin(t*0.06);
-  // arms
-  p[7][0]+=-0.12+wave*0.14; p[7][1]+=wave*0.12;
-  p[9][0]+=-0.15+wave*0.22; p[9][1]+=wave*0.2;
-  p[8][0]+=0.12-wave*0.14;  p[8][1]+=-wave*0.12;
-  p[10][0]+=0.15-wave*0.22; p[10][1]+=-wave*0.2;
-  // body sway
-  for(let i=0;i<p.length;i++)p[i][0]+=sw;
-  // knee bend
-  const kb=Math.max(0,Math.sin(t*0.05))*0.1;
-  p[13][1]+=kb; p[15][1]+=kb*1.5;
-  p[14][1]+=kb*0.5; p[16][1]+=kb*0.8;
-  return p;
+function drawSkeleton(ctx,cv,lm,color){
+  const W=cv.clientWidth,H=cv.clientHeight; cv.width=W; cv.height=H;
+  ctx.clearRect(0,0,W,H);
+  if(!lm)return;
+  ctx.strokeStyle=color;ctx.lineWidth=3;ctx.lineCap='round';
+  LIMBS.forEach(([a,b])=>{if((lm[a].visibility??1)<0.4||(lm[b].visibility??1)<0.4)return;
+    ctx.beginPath();ctx.moveTo(lm[a].x*W,lm[a].y*H);ctx.lineTo(lm[b].x*W,lm[b].y*H);ctx.stroke();});
+  ctx.fillStyle='#fff';
+  [11,12,13,14,15,16,23,24,25,26,27,28].forEach(i=>{if((lm[i].visibility??1)<0.4)return;
+    ctx.beginPath();ctx.arc(lm[i].x*W,lm[i].y*H,3.5,0,7);ctx.fill();});
+}
+function grade(s){return s>=85?'🔥 Perfect sync!':s>=70?'✨ Great match':s>=50?'👍 Getting there':s>=30?'🤔 Off the beat':'❌ Way off';}
+function drawTimeline(){
+  const W=tl.clientWidth,H=120;tl.width=W*2;tl.height=H*2;tctx.setTransform(2,0,0,2,0,0);
+  tctx.clearRect(0,0,W,H);const pad={l:30,r:6,t:8,b:14};
+  tctx.strokeStyle='#1f1d2c';tctx.lineWidth=1;tctx.font='9px ui-monospace,monospace';tctx.fillStyle='#9089a8';
+  [0,50,100].forEach(v=>{const y=pad.t+(1-v/100)*(H-pad.t-pad.b);tctx.beginPath();tctx.moveTo(pad.l,y);tctx.lineTo(W-pad.r,y);tctx.stroke();tctx.fillStyle='#9089a8';tctx.fillText(v,6,y+3);});
+  if(hist.length>1){tctx.beginPath();hist.forEach((v,i)=>{const x=pad.l+i/(hist.length-1)*(W-pad.l-pad.r),y=pad.t+(1-v/100)*(H-pad.t-pad.b);i?tctx.lineTo(x,y):tctx.moveTo(x,y);});
+    const g=tctx.createLinearGradient(0,0,W,0);g.addColorStop(0,'#ff6bcb');g.addColorStop(1,'#ffb347');tctx.strokeStyle=g;tctx.lineWidth=2.4;tctx.stroke();}
 }
 
-function noisePose(pose, level) {
-  return pose.map(([x,y])=>[x+(Math.random()-0.5)*level*2, y+(Math.random()-0.5)*level*2]);
+async function boot(){
+  try{
+    const fileset=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.12/wasm");
+    const opts={baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task"},runningMode:"VIDEO",numPoses:1};
+    landA=await PoseLandmarker.createFromOptions(fileset,opts);
+    landB=await PoseLandmarker.createFromOptions(fileset,opts);
+    startBtn.disabled=false; startBtn.textContent='▶ Play & compare'; statusEl.textContent='ready — press play';
+  }catch(e){ statusEl.textContent='Could not load MediaPipe (offline / CDN blocked): '+e.message; }
 }
 
-function drawSkeleton(canvasId, pose, color='#58a6ff') {
-  const cv=document.getElementById(canvasId);
-  const ctx=cv.getContext('2d');
-  const W=cv.clientWidth*devicePixelRatio,H=cv.clientHeight*devicePixelRatio;
-  cv.width=W; cv.height=H;
-  ctx.fillStyle='#0f0f14'; ctx.fillRect(0,0,W,H);
-  const px=([x,y])=>[((x+1)/2)*W*0.7+W*0.15, ((1-y)/2)*H*0.9+H*0.05];
-  // bones
-  ctx.lineWidth=2.5*devicePixelRatio;
-  SKELETON.forEach(([a,b])=>{
-    const [x1,y1]=px(pose[a]),[x2,y2]=px(pose[b]);
-    ctx.strokeStyle=color+'88'; ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-  });
-  // joints
-  pose.forEach((p,i)=>{const [x,y]=px(p);ctx.fillStyle=JOINT_COLORS[i];ctx.beginPath();ctx.arc(x,y,4*devicePixelRatio,0,6.28);ctx.fill();});
+function detect(land,vid,ovctx,ov,color){
+  if(vid.readyState<2)return null;
+  const res=land.detectForVideo(vid,performance.now());
+  const lm=res.landmarks&&res.landmarks[0]?res.landmarks[0]:null;
+  drawSkeleton(ovctx,ov,lm,color);
+  return lm;
+}
+function loop(){
+  if(!running)return;
+  lmA=detect(landA,vidA,cA,ovA,'#ff6bcb');
+  lmB=detect(landB,vidB,cB,ovB,'#ffb347');
+  if(lmA&&lmB){
+    const sim=poseSim(lmA,lmB);
+    const score=Math.max(0,Math.min(100,((sim-0.25)/0.75)*100));
+    ema=ema*0.8+score*0.2;
+    document.getElementById('scoreNum').textContent=Math.round(ema)+'%';
+    document.getElementById('grade').textContent=grade(ema);
+    document.getElementById('bar').style.width=ema+'%';
+    hist.push(ema); if(hist.length>160)hist.shift();
+    drawTimeline();
+  }
+  requestAnimationFrame(loop);
 }
 
-function cosineSim(a,b){
-  const flat_a=a.flat(), flat_b=b.flat();
-  let dot=0,na=0,nb=0;
-  for(let i=0;i<flat_a.length;i++){dot+=flat_a[i]*flat_b[i];na+=flat_a[i]**2;nb+=flat_b[i]**2;}
-  return dot/(Math.sqrt(na)*Math.sqrt(nb)||1);
-}
-
-function jointSim(ref,stu) {
-  return ref.map(([rx,ry],i)=>{
-    const [sx,sy]=stu[i];
-    const d=Math.hypot(rx-sx,ry-sy);
-    return Math.max(0,1-d*2);
-  });
-}
-
-function drawTimeline() {
-  const cv=document.getElementById('timeline');
-  const ctx=cv.getContext('2d');
-  const W=cv.clientWidth*devicePixelRatio,H=cv.clientHeight*devicePixelRatio;
-  cv.width=W; cv.height=H;
-  ctx.fillStyle='#0f0f14'; ctx.fillRect(0,0,W,H);
-  if(history.length<2)return;
-  ctx.strokeStyle='#ff6bcb'; ctx.lineWidth=2*devicePixelRatio;
-  ctx.beginPath();
-  history.forEach((v,i)=>{const x=i/(history.length-1)*W,y=H-(v*H*0.85+H*0.05);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
-  ctx.stroke();
-  // fill
-  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fillStyle='rgba(255,107,203,.08)'; ctx.fill();
-  // 0.8 guideline
-  const gy=H-(0.8*H*0.85+H*0.05);
-  ctx.strokeStyle='#3fb95040'; ctx.setLineDash([4,4]); ctx.lineWidth=devicePixelRatio;
-  ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke(); ctx.setLineDash([]);
-}
-
-function gradeStr(s) {
-  if(s>=.95)return'S — Perfect! 🌟';if(s>=.85)return'A — Excellent!';if(s>=.75)return'B — Good';if(s>=.60)return'C — Needs work';return'D — Keep practicing';
-}
-
-function renderJoints(sims){
-  const el=document.getElementById('joints');
-  el.innerHTML='';
-  sims.forEach((v,i)=>{
-    const d=document.createElement('div');d.className='jb';
-    d.innerHTML=`<div class="name">${JOINT_NAMES[i]}</div><div class="val">${(v*100).toFixed(0)}%</div>`;
-    el.appendChild(d);
-  });
-}
-
-function step() {
-  const ref=animatedPose(frame);
-  const stu=noisePose(ref,NOISE);
-  drawSkeleton('ref',ref,'#58a6ff');
-  drawSkeleton('stu',stu,'#ff6bcb');
-  const sim=Math.max(0,(cosineSim(ref,stu)-.5)*2);
-  history.push(sim); if(history.length>200)history.shift();
-  const avg=history.reduce((a,b)=>a+b,0)/history.length;
-  document.getElementById('score-bar').style.width=(avg*100)+'%';
-  document.getElementById('score-label').textContent=(avg*100).toFixed(1)+'%';
-  document.getElementById('grade').textContent=gradeStr(avg);
-  drawTimeline();
-  renderJoints(jointSim(ref,stu));
-  frame++;
-  if(running)raf=requestAnimationFrame(step);
-}
-
-document.getElementById('play').onclick=()=>{
-  if(running){running=false;cancelAnimationFrame(raf);document.getElementById('play').textContent='▶ Resume';}
-  else{running=true;document.getElementById('play').textContent='⏸ Pause';step();}
+startBtn.onclick=async()=>{
+  if(running){running=false;vidA.pause();vidB.pause();startBtn.textContent='▶ Play & compare';return;}
+  try{ await Promise.all([vidA.play(),vidB.play()]); }catch(_){}
+  running=true; startBtn.textContent='⏸ Pause'; statusEl.textContent='comparing poses…'; loop();
 };
-document.getElementById('reset').onclick=()=>{running=false;cancelAnimationFrame(raf);frame=0;history=[];document.getElementById('play').textContent='▶ Start Demo';document.getElementById('score-label').textContent='—';document.getElementById('score-bar').style.width='0%';document.getElementById('joints').innerHTML='';drawTimeline();};
-document.getElementById('noise').oninput=e=>{NOISE=e.target.value/100;document.getElementById('noiseV').textContent=NOISE.toFixed(2)};
+document.getElementById('restartBtn').onclick=()=>{vidA.currentTime=0;vidB.currentTime=0;hist=[];ema=0;drawTimeline();};
+window.addEventListener('resize',()=>{if(lmA)drawSkeleton(cA,ovA,lmA,'#ff6bcb');if(lmB)drawSkeleton(cB,ovB,lmB,'#ffb347');drawTimeline();});
 
-// init canvases
-drawSkeleton('ref',BASE_POSE,'#58a6ff');
-drawSkeleton('stu',BASE_POSE,'#ff6bcb');
+boot();
 </script>
 </body>
 </html>
