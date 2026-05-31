@@ -26,7 +26,7 @@
   @media(max-width:640px){.layout{grid-template-columns:1fr}}
   .card{background:linear-gradient(180deg,var(--pan),var(--pan2));border:1px solid var(--line);border-radius:14px;padding:12px}
   h2{font-size:11.5px;color:var(--muted);margin-bottom:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
-  .vwrap{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/10}
+  .vwrap{position:relative;width:100%;max-width:230px;margin:0 auto;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:288/924}
   .vwrap video{width:100%;height:100%;object-fit:cover;display:block}
   .vwrap canvas{position:absolute;inset:0;width:100%;height:100%}
   .scorecard{background:linear-gradient(180deg,var(--pan),var(--pan2));border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center}
@@ -41,8 +41,8 @@
 <body>
 <div class="wrap">
   <h1>M(L)ove — dance pose comparison</h1>
-  <p class="sub">Two clips of the same routine play side by side. <b>MediaPipe Pose</b> (the real Tasks-Vision <i>PoseLandmarker</i>) tracks 33 body keypoints on each, frame by frame, and a <b>limb-direction cosine similarity</b> scores how closely the two dancers' bodies match in real time.</p>
-  <div class="note">⚠️ <b>Simplified demo.</b> Pose detection is genuinely MediaPipe running in your browser; the similarity score is a lightweight limb-angle comparison, not a full choreography-grading model. It downloads the pose model (~5&nbsp;MB) on first run.</div>
+  <p class="sub">A single real video of <b>two dancers performing the same routine side by side</b> is split down the middle — left (<i>practice</i>) vs. right (<i>performance</i>). <b>MediaPipe Pose</b> (the real Tasks-Vision <i>PoseLandmarker</i>) tracks 33 body keypoints on each half, frame by frame, and a <b>limb-direction cosine similarity</b> scores how closely the two dancers' bodies match in real time.</p>
+  <div class="note">⚠️ <b>Simplified demo.</b> Pose detection is genuinely MediaPipe running in your browser; the similarity score is a lightweight limb-angle comparison, not a full choreography-grading model. It downloads the pose model (~5&nbsp;MB) on first run. Source clip: <a href="https://www.tiktok.com/@bubbletea.o1/video/7315338801243508000" style="color:var(--or)">@bubbletea.o1 on TikTok</a>.</div>
 
   <div class="ctrl">
     <button class="bp" id="startBtn" disabled>Loading MediaPipe…</button>
@@ -59,12 +59,12 @@
 
   <div class="layout">
     <div class="card">
-      <h2>Reference dancer</h2>
-      <div class="vwrap"><video id="vidA" src="out1.mp4" muted loop playsinline preload="auto"></video><canvas id="ovA"></canvas></div>
+      <h2>Practice — left</h2>
+      <div class="vwrap"><video id="vidA" src="left.mp4" muted loop playsinline preload="auto"></video><canvas id="ovA"></canvas></div>
     </div>
     <div class="card">
-      <h2>Comparison dancer</h2>
-      <div class="vwrap"><video id="vidB" src="out2.mp4" muted loop playsinline preload="auto"></video><canvas id="ovB"></canvas></div>
+      <h2>Performance — right</h2>
+      <div class="vwrap"><video id="vidB" src="right.mp4" muted loop playsinline preload="auto"></video><canvas id="ovB"></canvas></div>
     </div>
   </div>
 
